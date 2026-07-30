@@ -2,14 +2,18 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { applications } from "../src/data.js";
 import {
+  archiveApplication,
   applicationsToPdf,
   createApplication,
   createApplicationId,
   filterApplications,
+  getActiveApplications,
   getApplicationStats,
+  getArchivedApplications,
   getStatusCounts,
   groupApplicationsByStatus,
   removeApplication,
+  restoreApplication,
   updateApplication,
   validateApplication
 } from "../src/domain.js";
@@ -118,6 +122,26 @@ test("groups applications by status for board view", () => {
   assert.equal(groups.Interviewing[0].company, "BrightForge Labs");
 });
 
+test("archives unpursuable applications away from active listings", () => {
+  const archivedApplications = archiveApplication(applications, "app-1002", "2026-07-30T12:00:00.000Z");
+
+  assert.equal(getActiveApplications(archivedApplications).length, 5);
+  assert.equal(getArchivedApplications(archivedApplications).length, 1);
+  assert.equal(getArchivedApplications(archivedApplications)[0].archiveReason, "Unpursuable");
+  assert.equal(getArchivedApplications(archivedApplications)[0].archivedAt, "2026-07-30T12:00:00.000Z");
+});
+
+test("restores archived applications to the active tracker", () => {
+  const archivedApplications = archiveApplication(applications, "app-1002", "2026-07-30T12:00:00.000Z");
+  const restoredApplications = restoreApplication(archivedApplications, "app-1002");
+  const restoredApplication = restoredApplications.find((application) => application.id === "app-1002");
+
+  assert.equal(getActiveApplications(restoredApplications).length, 6);
+  assert.equal(getArchivedApplications(restoredApplications).length, 0);
+  assert.equal("archivedAt" in restoredApplication, false);
+  assert.equal("archiveReason" in restoredApplication, false);
+});
+
 test("exports applications to a readable PDF report", () => {
   const pdf = applicationsToPdf([
     {
@@ -134,6 +158,7 @@ test("exports applications to a readable PDF report", () => {
     }
   ], {
     generatedAt: new Date("2026-07-30T12:00:00"),
+    viewLabel: "Archive - unpursuable listings",
     statusFilter: "Applied",
     searchQuery: "Acme"
   });
@@ -142,6 +167,7 @@ test("exports applications to a readable PDF report", () => {
   assert.match(pdfText, /^%PDF-1.4/);
   assert.match(pdfText, /Job Hunt Tracker Report/);
   assert.match(pdfText, /Acme, Inc\./);
+  assert.match(pdfText, /View: Archive - unpursuable listings/);
   assert.match(pdfText, /Status filter: Applied/);
   assert.match(pdfText, /%%EOF$/);
 });

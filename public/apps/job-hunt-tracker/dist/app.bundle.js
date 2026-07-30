@@ -99,6 +99,14 @@ function getStatusCounts(applications) {
   }, {});
 }
 
+function getActiveApplications(applications) {
+  return applications.filter((application) => !application.archivedAt);
+}
+
+function getArchivedApplications(applications) {
+  return applications.filter((application) => Boolean(application.archivedAt));
+}
+
 function getApplicationStats(applications) {
   return {
     total: applications.length,
@@ -178,6 +186,31 @@ function updateApplication(applications, applicationId, updates) {
       ...updates,
       id: application.id
     };
+  });
+}
+
+function archiveApplication(applications, applicationId, archivedAt = new Date().toISOString()) {
+  return applications.map((application) => {
+    if (application.id !== applicationId) {
+      return application;
+    }
+
+    return {
+      ...application,
+      archivedAt,
+      archiveReason: "Unpursuable"
+    };
+  });
+}
+
+function restoreApplication(applications, applicationId) {
+  return applications.map((application) => {
+    if (application.id !== applicationId) {
+      return application;
+    }
+
+    const { archivedAt, archiveReason, ...restoredApplication } = application;
+    return restoredApplication;
   });
 }
 
@@ -264,6 +297,7 @@ function compareDatesDescending(a, b) {
 function createReportLines(applications, options) {
   const lines = [
     `${applications.length} listing${applications.length === 1 ? "" : "s"} exported`,
+    `View: ${options.viewLabel ?? "Active tracker"}`,
     `Status filter: ${options.statusFilter ?? "All"}`,
     `Search: ${options.searchQuery ? options.searchQuery : "None"}`,
     ""
@@ -272,6 +306,9 @@ function createReportLines(applications, options) {
   applications.forEach((application, index) => {
     lines.push(`${index + 1}. ${application.company || "Untitled company"} - ${application.role || "Untitled role"}`);
     lines.push(`   Status: ${application.status || "Unknown"} | Applied: ${application.dateApplied || "Not applied"} | Location: ${application.location || "Not listed"}`);
+    if (application.archivedAt) {
+      lines.push(`   Archive: ${application.archiveReason || "Archived"} | Archived: ${formatReportDate(new Date(application.archivedAt))}`);
+    }
     lines.push(`   Salary: ${application.salaryRange || "Not listed"} | Contact: ${application.contact || "No contact"} | Source: ${application.source || "Not listed"}`);
     wrapReportText(`   Next step: ${application.nextStep || "No next step"}`).forEach((line) => lines.push(line));
     wrapReportText(`   Notes: ${application.notes || "No notes"}`).forEach((line) => lines.push(line));
@@ -457,6 +494,7 @@ const state = {
   status: "All",
   query: "",
   view: "table",
+  mode: "active",
   editingId: null
 };
 
@@ -465,6 +503,7 @@ const statsElement = document.querySelector("#stats");
 const filtersElement = document.querySelector("#status-filters");
 const listElement = document.querySelector("#application-list");
 const searchElement = document.querySelector("#application-search");
+const archiveToggleElement = document.querySelector(".archive-toggle");
 const viewToggleElement = document.querySelector(".view-toggle");
 const formElement = document.querySelector("#application-form");
 const formMessageElement = document.querySelector("#form-message");
@@ -483,28 +522,32 @@ const saveStatusElement = document.querySelector("#save-status");
 function render() {
   renderStats();
   renderFilters();
+  renderModeToggle();
   renderViewToggle();
   renderApplications();
 }
 
 function renderStats() {
-  const stats = getApplicationStats(state.applications);
+  const activeApplications = getActiveApplications(state.applications);
+  const archivedApplications = getArchivedApplications(state.applications);
+  const stats = getApplicationStats(activeApplications);
 
   statsElement.innerHTML = [
-    createStatCard("Total Applications", stats.total, "Tracked in this search"),
+    createStatCard("Active Applications", stats.total, "Pursuable listings"),
     createStatCard("Interviewing", stats.interviewing, "Active conversations"),
     createStatCard("Offers", stats.offers, "Ready for comparison"),
-    createStatCard("Next Actions", stats.nextActions, "Open next steps")
+    createStatCard("Archived", archivedApplications.length, "Unpursuable listings")
   ].join("");
 }
 
 function renderFilters() {
-  const counts = getStatusCounts(state.applications);
+  const currentApplications = getCurrentApplications();
+  const counts = getStatusCounts(currentApplications);
   const filters = ["All", ...STATUS_OPTIONS];
 
   filtersElement.innerHTML = filters
     .map((status) => {
-      const count = status === "All" ? state.applications.length : counts[status];
+      const count = status === "All" ? currentApplications.length : counts[status];
       const isPressed = status === state.status;
 
       return `
@@ -516,6 +559,14 @@ function renderFilters() {
     .join("");
 }
 
+function renderModeToggle() {
+  const archivedCount = getArchivedApplications(state.applications).length;
+
+  archiveToggleElement.querySelector("[data-mode='active']").setAttribute("aria-pressed", String(state.mode === "active"));
+  archiveToggleElement.querySelector("[data-mode='archive']").setAttribute("aria-pressed", String(state.mode === "archive"));
+  archiveToggleElement.querySelector("[data-mode='archive']").textContent = `Archive ${archivedCount}`;
+}
+
 function renderViewToggle() {
   viewToggleElement.querySelectorAll("button[data-view]").forEach((button) => {
     button.setAttribute("aria-pressed", String(button.dataset.view === state.view));
@@ -523,9 +574,19 @@ function renderViewToggle() {
 }
 
 function renderApplications() {
+  const currentApplications = getCurrentApplications();
+
   if (state.applications.length === 0) {
     listElement.className = "table-wrap";
     listElement.innerHTML = `<div class="empty-state">No applications yet. Create your first listing to start a new tracker.</div>`;
+    return;
+  }
+
+  if (currentApplications.length === 0) {
+    listElement.className = "table-wrap";
+    listElement.innerHTML = state.mode === "archive"
+      ? `<div class="empty-state">No archived listings yet. Archive unpursuable jobs from the active tracker.</div>`
+      : `<div class="empty-state">No active applications yet. Check the archive or create a new listing.</div>`;
     return;
   }
 
@@ -553,6 +614,7 @@ function renderTable(visibleApplications) {
       const appliedDate = application.dateApplied ? formatDate(application.dateApplied) : "Not applied";
       const statusClass = `status-${application.status.toLowerCase().replaceAll(" ", "-")}`;
       const isEditing = application.id === state.editingId;
+      const dateValue = state.mode === "archive" && application.archivedAt ? formatDate(application.archivedAt) : appliedDate;
 
       return `
         <tr class="${isEditing ? "is-editing" : ""}">
@@ -565,12 +627,12 @@ function renderTable(visibleApplications) {
             <small>${escapeHtml(application.salaryRange || "Salary not listed")}</small>
           </td>
           <td><span class="status-pill ${statusClass}">${application.status}</span></td>
-          <td>${appliedDate}</td>
+          <td>${dateValue}</td>
           <td>
             <strong>${escapeHtml(application.contact || "No contact yet")}</strong>
             <small>${escapeHtml(application.source || "Source not listed")}</small>
           </td>
-          <td>${escapeHtml(application.nextStep || "No next step")}</td>
+          <td>${createNextStepCell(application)}</td>
           <td>${createActionButtons(application)}</td>
         </tr>
       `;
@@ -584,9 +646,9 @@ function renderTable(visibleApplications) {
           <th>Company</th>
           <th>Role</th>
           <th>Status</th>
-          <th>Date</th>
+          <th>${state.mode === "archive" ? "Archived" : "Date"}</th>
           <th>Contact</th>
-          <th>Next Step</th>
+          <th>${state.mode === "archive" ? "Archive Reason" : "Next Step"}</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -628,22 +690,46 @@ function createBoardColumn(status, applications) {
 function createBoardCard(application) {
   const isEditing = application.id === state.editingId;
   const appliedDate = application.dateApplied ? formatDate(application.dateApplied) : "Not applied";
+  const timelineText = state.mode === "archive" && application.archivedAt
+    ? `Archived ${formatDate(application.archivedAt)}`
+    : appliedDate;
 
   return `
     <article class="board-card ${isEditing ? "is-editing" : ""}">
       <strong>${escapeHtml(application.company)}</strong>
       <span>${escapeHtml(application.role)}</span>
-      <small>${escapeHtml(application.location || "Location not listed")} - ${appliedDate}</small>
-      <p>${escapeHtml(application.nextStep || "No next step")}</p>
+      <small>${escapeHtml(application.location || "Location not listed")} - ${timelineText}</small>
+      <p>${state.mode === "archive" ? "Unpursuable" : escapeHtml(application.nextStep || "No next step")}</p>
       ${createActionButtons(application)}
     </article>
   `;
 }
 
+function createNextStepCell(application) {
+  if (state.mode !== "archive") {
+    return escapeHtml(application.nextStep || "No next step");
+  }
+
+  return `
+    <strong>${escapeHtml(application.archiveReason || "Unpursuable")}</strong>
+    <small>${escapeHtml(application.nextStep || "No next step was saved")}</small>
+  `;
+}
+
 function createActionButtons(application) {
+  if (state.mode === "archive") {
+    return `
+      <div class="action-group" aria-label="Actions for ${escapeHtml(application.company)}">
+        <button class="text-action" type="button" data-action="restore" data-id="${application.id}">Restore</button>
+        <button class="text-action danger" type="button" data-action="remove" data-id="${application.id}">Delete</button>
+      </div>
+    `;
+  }
+
   return `
     <div class="action-group" aria-label="Actions for ${escapeHtml(application.company)}">
       <button class="text-action" type="button" data-action="edit" data-id="${application.id}">Edit</button>
+      <button class="text-action" type="button" data-action="archive" data-id="${application.id}">Archive</button>
       <button class="text-action danger" type="button" data-action="remove" data-id="${application.id}">Delete</button>
     </div>
   `;
@@ -762,10 +848,16 @@ function getApplicationFromForm(formData) {
 }
 
 function getVisibleApplications() {
-  return filterApplications(state.applications, {
+  return filterApplications(getCurrentApplications(), {
     status: state.status,
     query: state.query
   });
+}
+
+function getCurrentApplications() {
+  return state.mode === "archive"
+    ? getArchivedApplications(state.applications)
+    : getActiveApplications(state.applications);
 }
 
 function exportVisibleApplications() {
@@ -778,6 +870,7 @@ function exportVisibleApplications() {
 
   const pdf = applicationsToPdf(visibleApplications, {
     generatedAt: new Date(),
+    viewLabel: state.mode === "archive" ? "Archive - unpursuable listings" : "Active tracker",
     statusFilter: state.status,
     searchQuery: state.query
   });
@@ -785,7 +878,8 @@ function exportVisibleApplications() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `job-hunt-tracker-${new Date().toISOString().slice(0, 10)}.pdf`;
+  const fileSuffix = state.mode === "archive" ? "archive" : "tracker";
+  link.download = `job-hunt-${fileSuffix}-${new Date().toISOString().slice(0, 10)}.pdf`;
   document.body.append(link);
   link.click();
   link.remove();
@@ -802,6 +896,19 @@ filtersElement.addEventListener("click", (event) => {
 
   state.status = button.dataset.status;
   render();
+});
+
+archiveToggleElement.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-mode]");
+
+  if (!button) {
+    return;
+  }
+
+  state.mode = button.dataset.mode;
+  state.editingId = null;
+  resetFilters();
+  resetFormMode();
 });
 
 viewToggleElement.addEventListener("click", (event) => {
@@ -835,9 +942,49 @@ listElement.addEventListener("click", (event) => {
     return;
   }
 
+  if (button.dataset.action === "archive") {
+    const application = state.applications.find((item) => item.id === applicationId);
+    const shouldArchive = window.confirm(`Archive ${application?.company ?? "this application"} as unpursuable? You can restore it later.`);
+
+    if (!shouldArchive) {
+      return;
+    }
+
+    state.applications = archiveApplication(state.applications, applicationId);
+    persistApplications("Archived locally");
+
+    if (state.editingId === applicationId) {
+      state.editingId = null;
+      resetFormMode();
+      formMessageElement.textContent = "Application archived as unpursuable.";
+      return;
+    }
+
+    formMessageElement.textContent = "Application archived as unpursuable.";
+    formMessageElement.classList.remove("error");
+    render();
+    return;
+  }
+
+  if (button.dataset.action === "restore") {
+    const application = state.applications.find((item) => item.id === applicationId);
+    const shouldRestore = window.confirm(`Restore ${application?.company ?? "this application"} to the active tracker?`);
+
+    if (!shouldRestore) {
+      return;
+    }
+
+    state.applications = restoreApplication(state.applications, applicationId);
+    persistApplications("Restored locally");
+    formMessageElement.textContent = "Application restored to the active tracker.";
+    formMessageElement.classList.remove("error");
+    render();
+    return;
+  }
+
   if (button.dataset.action === "remove") {
     const application = state.applications.find((item) => item.id === applicationId);
-    const shouldRemove = window.confirm(`Delete ${application?.company ?? "this application"} from the tracker?`);
+    const shouldRemove = window.confirm(`Delete ${application?.company ?? "this application"} from the ${state.mode === "archive" ? "archive" : "tracker"}?`);
 
     if (!shouldRemove) {
       return;
@@ -860,6 +1007,8 @@ listElement.addEventListener("click", (event) => {
 });
 
 newApplicationButton.addEventListener("click", () => {
+  state.mode = "active";
+  resetFilters();
   resetFormMode();
   focusEditor();
 });
@@ -873,6 +1022,7 @@ resetSampleDataButton.addEventListener("click", () => {
 
   clearSavedApplications(browserStorage);
   state.applications = [...sampleApplications];
+  state.mode = "active";
   state.editingId = null;
   resetFilters();
   resetFormMode();
@@ -887,6 +1037,7 @@ startBlankTrackerButton.addEventListener("click", () => {
   }
 
   state.applications = [];
+  state.mode = "active";
   state.editingId = null;
   resetFilters();
   persistApplications("Blank tracker saved locally");
@@ -938,11 +1089,15 @@ formElement.addEventListener("submit", (event) => {
 });
 
 function formatDate(dateString) {
+  const date = dateString.includes("T")
+    ? new Date(dateString)
+    : new Date(`${dateString}T12:00:00`);
+
   return new Intl.DateTimeFormat("en", {
     month: "short",
     day: "numeric",
     year: "numeric"
-  }).format(new Date(`${dateString}T12:00:00`));
+  }).format(date);
 }
 
 function escapeHtml(value) {

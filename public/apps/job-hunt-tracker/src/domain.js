@@ -9,6 +9,14 @@ export function getStatusCounts(applications) {
   }, {});
 }
 
+export function getActiveApplications(applications) {
+  return applications.filter((application) => !application.archivedAt);
+}
+
+export function getArchivedApplications(applications) {
+  return applications.filter((application) => Boolean(application.archivedAt));
+}
+
 export function getApplicationStats(applications) {
   return {
     total: applications.length,
@@ -88,6 +96,31 @@ export function updateApplication(applications, applicationId, updates) {
       ...updates,
       id: application.id
     };
+  });
+}
+
+export function archiveApplication(applications, applicationId, archivedAt = new Date().toISOString()) {
+  return applications.map((application) => {
+    if (application.id !== applicationId) {
+      return application;
+    }
+
+    return {
+      ...application,
+      archivedAt,
+      archiveReason: "Unpursuable"
+    };
+  });
+}
+
+export function restoreApplication(applications, applicationId) {
+  return applications.map((application) => {
+    if (application.id !== applicationId) {
+      return application;
+    }
+
+    const { archivedAt, archiveReason, ...restoredApplication } = application;
+    return restoredApplication;
   });
 }
 
@@ -174,6 +207,7 @@ function compareDatesDescending(a, b) {
 function createReportLines(applications, options) {
   const lines = [
     `${applications.length} listing${applications.length === 1 ? "" : "s"} exported`,
+    `View: ${options.viewLabel ?? "Active tracker"}`,
     `Status filter: ${options.statusFilter ?? "All"}`,
     `Search: ${options.searchQuery ? options.searchQuery : "None"}`,
     ""
@@ -182,6 +216,9 @@ function createReportLines(applications, options) {
   applications.forEach((application, index) => {
     lines.push(`${index + 1}. ${application.company || "Untitled company"} - ${application.role || "Untitled role"}`);
     lines.push(`   Status: ${application.status || "Unknown"} | Applied: ${application.dateApplied || "Not applied"} | Location: ${application.location || "Not listed"}`);
+    if (application.archivedAt) {
+      lines.push(`   Archive: ${application.archiveReason || "Archived"} | Archived: ${formatReportDate(new Date(application.archivedAt))}`);
+    }
     lines.push(`   Salary: ${application.salaryRange || "Not listed"} | Contact: ${application.contact || "No contact"} | Source: ${application.source || "Not listed"}`);
     wrapReportText(`   Next step: ${application.nextStep || "No next step"}`).forEach((line) => lines.push(line));
     wrapReportText(`   Notes: ${application.notes || "No notes"}`).forEach((line) => lines.push(line));

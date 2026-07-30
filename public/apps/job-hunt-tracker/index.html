@@ -28,8 +28,8 @@
         <section class="panel list-panel">
           <div class="panel-header">
             <div>
-              <p class="eyebrow">Pipeline</p>
-              <h2>Applications</h2>
+          <p class="eyebrow">Pipeline</p>
+          <h2>Applications</h2>
             </div>
             <label class="search-field">
               <span>Search</span>
@@ -39,9 +39,15 @@
 
           <div class="list-controls">
             <div class="segmented-controls" id="status-filters" aria-label="Filter by status"></div>
-            <div class="view-toggle" aria-label="Choose view">
-              <button type="button" data-view="table" aria-pressed="true">Table</button>
-              <button type="button" data-view="board" aria-pressed="false">Board</button>
+            <div class="list-control-stack">
+              <div class="archive-toggle" aria-label="Choose active or archived listings">
+                <button type="button" data-mode="active" aria-pressed="true">Active</button>
+                <button type="button" data-mode="archive" aria-pressed="false">Archive 0</button>
+              </div>
+              <div class="view-toggle" aria-label="Choose view">
+                <button type="button" data-view="table" aria-pressed="true">Table</button>
+                <button type="button" data-view="board" aria-pressed="false">Board</button>
+              </div>
             </div>
           </div>
           <div class="table-wrap" id="application-list"></div>

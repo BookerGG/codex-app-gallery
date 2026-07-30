@@ -263,12 +263,24 @@ textarea:focus {
   border-bottom: 1px solid var(--border);
 }
 
+.list-control-stack {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.archive-toggle {
+  display: flex;
+  gap: 8px;
+}
+
 .view-toggle {
   display: flex;
   gap: 8px;
 }
 
 .segmented-controls button,
+.archive-toggle button,
 .view-toggle button {
   flex: 0 0 auto;
   padding: 0 13px;
@@ -278,6 +290,7 @@ textarea:focus {
 }
 
 .segmented-controls button[aria-pressed="true"],
+.archive-toggle button[aria-pressed="true"],
 .view-toggle button[aria-pressed="true"] {
   border-color: var(--accent);
   background: rgba(15, 118, 110, 0.12);
@@ -386,7 +399,7 @@ form {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  width: 112px;
+  width: 182px;
 }
 
 .text-action {
@@ -535,6 +548,12 @@ form {
   }
 
   .view-toggle {
+    flex-direction: column;
+  }
+
+  .list-control-stack,
+  .archive-toggle {
+    align-items: stretch;
     flex-direction: column;
   }
 

@@ -15,8 +15,12 @@ type JobApplication = {
   nextStep?: string;
   source?: string;
   notes?: string;
+  archivedAt?: string;
+  archiveReason?: "Unpursuable";
 };
 ```
+
+Archived applications remain in the same saved collection as active applications. Active views omit records with `archivedAt`; the archive view shows only those records and allows restore or delete.
 
 ## Status Meaning
 
