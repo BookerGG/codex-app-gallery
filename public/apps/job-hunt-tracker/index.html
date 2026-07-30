@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Hunt Tracker</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Portfolio project 1</p>
+          <h1>Job Hunt Tracker</h1>
+        </div>
+        <div class="topbar-actions">
+          <p class="save-status" id="save-status" role="status" aria-live="polite">Using sample data</p>
+          <button class="ghost-action danger-action" id="start-blank-tracker-button" type="button">Start blank tracker</button>
+          <button class="ghost-action" id="reset-sample-data-button" type="button">Reset sample data</button>
+          <button class="primary-action" id="new-application-button" type="button">New listing</button>
+        </div>
+      </header>
+
+      <section class="stat-grid" id="stats" aria-label="Application summary"></section>
+
+      <section class="workspace" aria-label="Application workspace">
+        <section class="panel list-panel">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Pipeline</p>
+              <h2>Applications</h2>
+            </div>
+            <label class="search-field">
+              <span>Search</span>
+              <input id="application-search" type="search" placeholder="Company, role, contact" />
+            </label>
+          </div>
+
+          <div class="segmented-controls" id="status-filters" aria-label="Filter by status"></div>
+          <div class="table-wrap" id="application-list"></div>
+        </section>
+
+        <aside class="panel form-panel" id="application-editor" aria-label="Customize application">
+          <div>
+            <p class="eyebrow" id="form-eyebrow">New listing</p>
+            <h2 id="form-title">Create Application</h2>
+          </div>
+
+          <form id="application-form" novalidate>
+            <input name="id" type="hidden" />
+
+            <label>
+              <span>Company</span>
+              <input name="company" required placeholder="Northstar Studio" />
+            </label>
+
+            <label>
+              <span>Role</span>
+              <input name="role" required placeholder="Junior Frontend Developer" />
+            </label>
+
+            <label>
+              <span>Location</span>
+              <input name="location" placeholder="Remote" />
+            </label>
+
+            <div class="field-row">
+              <label>
+                <span>Status</span>
+                <select name="status" id="status-select" required></select>
+              </label>
+
+              <label>
+                <span>Date Applied</span>
+                <input name="dateApplied" id="date-applied" type="date" required />
+              </label>
+            </div>
+
+            <label>
+              <span>Salary Range</span>
+              <input name="salaryRange" placeholder="$68k-$82k" />
+            </label>
+
+            <label>
+              <span>Contact</span>
+              <input name="contact" placeholder="Recruiter or hiring manager" />
+            </label>
+
+            <label>
+              <span>Next Step</span>
+              <input name="nextStep" placeholder="Send portfolio link Friday" />
+            </label>
+
+            <label>
+              <span>Source</span>
+              <input name="source" placeholder="LinkedIn, referral, company site" />
+            </label>
+
+            <label>
+              <span>Notes</span>
+              <textarea name="notes" rows="4" placeholder="Role details, interview notes, or follow-up context"></textarea>
+            </label>
+
+            <div class="form-actions">
+              <button class="primary-action" id="save-application-button" type="submit">Create listing</button>
+              <button class="ghost-action is-hidden" id="cancel-edit-button" type="button">Cancel edit</button>
+            </div>
+
+            <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
+          </form>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./dist/app.bundle.js"></script>
+  </body>
+</html>
