@@ -102,7 +102,8 @@ h2 {
 .primary-action,
 .ghost-action,
 .text-action,
-.segmented-controls button {
+.segmented-controls button,
+.view-toggle button {
   min-height: 42px;
   border: 1px solid transparent;
   border-radius: 8px;
@@ -250,11 +251,25 @@ textarea:focus {
 .segmented-controls {
   display: flex;
   gap: 8px;
-  padding: 14px 20px;
   overflow-x: auto;
 }
 
-.segmented-controls button {
+.list-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.segmented-controls button,
+.view-toggle button {
   flex: 0 0 auto;
   padding: 0 13px;
   border-color: var(--border);
@@ -262,7 +277,8 @@ textarea:focus {
   color: var(--text);
 }
 
-.segmented-controls button[aria-pressed="true"] {
+.segmented-controls button[aria-pressed="true"],
+.view-toggle button[aria-pressed="true"] {
   border-color: var(--accent);
   background: rgba(15, 118, 110, 0.12);
   color: var(--accent-strong);
@@ -410,6 +426,86 @@ form {
   text-align: center;
 }
 
+.board-wrap {
+  overflow-x: auto;
+  padding: 16px;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(220px, 1fr));
+  gap: 12px;
+  min-width: 1320px;
+}
+
+.board-column {
+  min-height: 260px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.board-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.board-column-header strong {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.board-card-list {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.board-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.board-card.is-editing {
+  border-color: var(--accent);
+  background: rgba(15, 118, 110, 0.07);
+}
+
+.board-card strong {
+  line-height: 1.2;
+}
+
+.board-card span {
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.board-card small,
+.board-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.board-card .action-group {
+  width: 100%;
+}
+
+.board-empty {
+  padding: 18px 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
 @media (max-width: 1050px) {
   .stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -427,13 +523,18 @@ form {
   }
 
   .topbar,
-  .panel-header {
+  .panel-header,
+  .list-controls {
     align-items: stretch;
     flex-direction: column;
   }
 
   .topbar-actions {
     align-items: stretch;
+    flex-direction: column;
+  }
+
+  .view-toggle {
     flex-direction: column;
   }
 

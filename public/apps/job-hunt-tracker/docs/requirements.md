@@ -2,7 +2,7 @@
 
 ## Product Brief
 
-The Job Hunt Tracker helps a job seeker organize applications, monitor their pipeline, and focus on timely follow-up actions.
+The Job Hunt Tracker helps a job seeker organize applications, monitor their pipeline, and focus on the next useful action.
 
 ## Target User
 
@@ -18,6 +18,8 @@ A junior developer, career changer, student, or early-career professional applyi
 - As a job seeker, I want to reset to sample data so I can recover the original demo state.
 - As a job seeker, I want to delete all listings so I can start a new tracker from scratch.
 - As a job seeker, I want to filter applications by status so I can focus on relevant next steps.
+- As a job seeker, I want a board view so I can scan my pipeline by status.
+- As a job seeker, I want to export listings to PDF so I can save or share a readable report.
 - As a job seeker, I want to search applications so I can quickly find a company or role.
 - As a job seeker, I want dashboard metrics so I can understand my search activity.
 
@@ -33,6 +35,8 @@ Included:
 - Browser-local save and load behavior
 - Reset sample data action
 - Start blank tracker action
+- Table and board views
+- PDF export for filtered listings
 - Summary cards
 - Mock data
 - Tests for filtering, summary, create, update, delete, save, load, and reset helper logic
@@ -55,4 +59,6 @@ Not included yet:
 - Users can refresh the page and keep locally saved changes.
 - Users can reset the tracker back to the original sample applications.
 - Users can delete all listings and keep the blank tracker after refresh.
+- Users can switch between table and board views.
+- Users can export the current filtered listings to a PDF file.
 - Summary metrics update when a new application is added.

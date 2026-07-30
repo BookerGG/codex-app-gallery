@@ -1,0 +1,15 @@
+# Dependencies and local tooling
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Local editor settings
+.vscode/
+.idea/
+

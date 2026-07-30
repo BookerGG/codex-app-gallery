@@ -30,7 +30,6 @@ type JobApplication = {
 ## Future Data Considerations
 
 - Split contacts into their own table.
-- Add follow-up tasks with due dates.
 - Track interviews as separate events.
 - Store application documents, links, and salary details.
 - Move from browser-local storage to a database when multi-device sync or accounts are added.

@@ -14,6 +14,8 @@ Build a focused dashboard that helps a job seeker see where every application st
 - Status filters, search, summary metrics, and a customizable application form are implemented.
 - Applications can be created, edited, and deleted during the session.
 - Applications are saved locally in the browser.
+- Table and board views are available for scanning the pipeline.
+- Filtered listings can be exported to a PDF report.
 - Sample data can be restored from the UI.
 - All listings can be deleted at once to start a blank tracker.
 - Domain and storage logic have lightweight tests.
@@ -28,6 +30,8 @@ Build a focused dashboard that helps a job seeker see where every application st
 - Save tracker changes in browser-local storage.
 - Reset the tracker to the original sample data.
 - Start over with a blank tracker.
+- Switch between table and board views.
+- Export the current filtered list to PDF.
 - See summary metrics for total applications, interviews, offers, and next actions.
 
 ## Workforce-Style Workflow
@@ -72,6 +76,5 @@ node scripts/build-browser-bundle.mjs
 ## Next Iterations
 
 - Add a backend database so records can sync across devices.
-- Add a kanban view by status.
-- Add follow-up reminders.
 - Deploy the app and add screenshots to this README.
+- Add a short portfolio case study with screenshots.

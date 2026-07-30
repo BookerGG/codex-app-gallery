@@ -1,10 +1,12 @@
 import { applications as sampleApplications } from "./data.js";
 import {
   STATUS_OPTIONS,
+  applicationsToPdf,
   createApplication,
   filterApplications,
   getApplicationStats,
   getStatusCounts,
+  groupApplicationsByStatus,
   removeApplication,
   updateApplication,
   validateApplication
@@ -22,6 +24,7 @@ const state = {
   applications: loadApplications(browserStorage, sampleApplications),
   status: "All",
   query: "",
+  view: "table",
   editingId: null
 };
 
@@ -30,6 +33,7 @@ const statsElement = document.querySelector("#stats");
 const filtersElement = document.querySelector("#status-filters");
 const listElement = document.querySelector("#application-list");
 const searchElement = document.querySelector("#application-search");
+const viewToggleElement = document.querySelector(".view-toggle");
 const formElement = document.querySelector("#application-form");
 const formMessageElement = document.querySelector("#form-message");
 const statusSelectElement = document.querySelector("#status-select");
@@ -37,6 +41,7 @@ const dateAppliedElement = document.querySelector("#date-applied");
 const newApplicationButton = document.querySelector("#new-application-button");
 const resetSampleDataButton = document.querySelector("#reset-sample-data-button");
 const startBlankTrackerButton = document.querySelector("#start-blank-tracker-button");
+const exportPdfButton = document.querySelector("#export-pdf-button");
 const saveApplicationButton = document.querySelector("#save-application-button");
 const cancelEditButton = document.querySelector("#cancel-edit-button");
 const formEyebrowElement = document.querySelector("#form-eyebrow");
@@ -46,6 +51,7 @@ const saveStatusElement = document.querySelector("#save-status");
 function render() {
   renderStats();
   renderFilters();
+  renderViewToggle();
   renderApplications();
 }
 
@@ -56,7 +62,7 @@ function renderStats() {
     createStatCard("Total Applications", stats.total, "Tracked in this search"),
     createStatCard("Interviewing", stats.interviewing, "Active conversations"),
     createStatCard("Offers", stats.offers, "Ready for comparison"),
-    createStatCard("Next Actions", stats.nextActions, "Follow-ups still open")
+    createStatCard("Next Actions", stats.nextActions, "Open next steps")
   ].join("");
 }
 
@@ -78,21 +84,37 @@ function renderFilters() {
     .join("");
 }
 
+function renderViewToggle() {
+  viewToggleElement.querySelectorAll("button[data-view]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.view === state.view));
+  });
+}
+
 function renderApplications() {
   if (state.applications.length === 0) {
+    listElement.className = "table-wrap";
     listElement.innerHTML = `<div class="empty-state">No applications yet. Create your first listing to start a new tracker.</div>`;
     return;
   }
 
-  const visibleApplications = filterApplications(state.applications, {
-    status: state.status,
-    query: state.query
-  });
+  const visibleApplications = getVisibleApplications();
 
   if (visibleApplications.length === 0) {
+    listElement.className = "table-wrap";
     listElement.innerHTML = `<div class="empty-state">No applications match the current filters.</div>`;
     return;
   }
+
+  if (state.view === "board") {
+    renderBoard(visibleApplications);
+    return;
+  }
+
+  renderTable(visibleApplications);
+}
+
+function renderTable(visibleApplications) {
+  listElement.className = "table-wrap";
 
   const rows = visibleApplications
     .map((application) => {
@@ -117,12 +139,7 @@ function renderApplications() {
             <small>${escapeHtml(application.source || "Source not listed")}</small>
           </td>
           <td>${escapeHtml(application.nextStep || "No next step")}</td>
-          <td>
-            <div class="action-group" aria-label="Actions for ${escapeHtml(application.company)}">
-              <button class="text-action" type="button" data-action="edit" data-id="${application.id}">Edit</button>
-              <button class="text-action danger" type="button" data-action="remove" data-id="${application.id}">Delete</button>
-            </div>
-          </td>
+          <td>${createActionButtons(application)}</td>
         </tr>
       `;
     })
@@ -143,6 +160,60 @@ function renderApplications() {
       </thead>
       <tbody>${rows}</tbody>
     </table>
+  `;
+}
+
+function renderBoard(visibleApplications) {
+  listElement.className = "board-wrap";
+
+  const groups = groupApplicationsByStatus(visibleApplications);
+  const statuses = state.status === "All" ? STATUS_OPTIONS : [state.status];
+
+  listElement.innerHTML = `
+    <div class="kanban-board">
+      ${statuses.map((status) => createBoardColumn(status, groups[status] ?? [])).join("")}
+    </div>
+  `;
+}
+
+function createBoardColumn(status, applications) {
+  const statusClass = `status-${status.toLowerCase().replaceAll(" ", "-")}`;
+  const cards = applications.length
+    ? applications.map((application) => createBoardCard(application)).join("")
+    : `<div class="board-empty">No listings</div>`;
+
+  return `
+    <section class="board-column" aria-label="${status} applications">
+      <div class="board-column-header">
+        <span class="status-pill ${statusClass}">${status}</span>
+        <strong>${applications.length}</strong>
+      </div>
+      <div class="board-card-list">${cards}</div>
+    </section>
+  `;
+}
+
+function createBoardCard(application) {
+  const isEditing = application.id === state.editingId;
+  const appliedDate = application.dateApplied ? formatDate(application.dateApplied) : "Not applied";
+
+  return `
+    <article class="board-card ${isEditing ? "is-editing" : ""}">
+      <strong>${escapeHtml(application.company)}</strong>
+      <span>${escapeHtml(application.role)}</span>
+      <small>${escapeHtml(application.location || "Location not listed")} - ${appliedDate}</small>
+      <p>${escapeHtml(application.nextStep || "No next step")}</p>
+      ${createActionButtons(application)}
+    </article>
+  `;
+}
+
+function createActionButtons(application) {
+  return `
+    <div class="action-group" aria-label="Actions for ${escapeHtml(application.company)}">
+      <button class="text-action" type="button" data-action="edit" data-id="${application.id}">Edit</button>
+      <button class="text-action danger" type="button" data-action="remove" data-id="${application.id}">Delete</button>
+    </div>
   `;
 }
 
@@ -258,6 +329,38 @@ function getApplicationFromForm(formData) {
   };
 }
 
+function getVisibleApplications() {
+  return filterApplications(state.applications, {
+    status: state.status,
+    query: state.query
+  });
+}
+
+function exportVisibleApplications() {
+  const visibleApplications = getVisibleApplications();
+
+  if (visibleApplications.length === 0) {
+    window.alert("There are no listings to export with the current filters.");
+    return;
+  }
+
+  const pdf = applicationsToPdf(visibleApplications, {
+    generatedAt: new Date(),
+    statusFilter: state.status,
+    searchQuery: state.query
+  });
+  const blob = new Blob([pdf], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `job-hunt-tracker-${new Date().toISOString().slice(0, 10)}.pdf`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setSaveStatus("PDF exported", "saved");
+}
+
 filtersElement.addEventListener("click", (event) => {
   const button = event.target.closest("button[data-status]");
 
@@ -267,6 +370,18 @@ filtersElement.addEventListener("click", (event) => {
 
   state.status = button.dataset.status;
   render();
+});
+
+viewToggleElement.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-view]");
+
+  if (!button) {
+    return;
+  }
+
+  state.view = button.dataset.view;
+  renderViewToggle();
+  renderApplications();
 });
 
 searchElement.addEventListener("input", (event) => {
@@ -345,6 +460,10 @@ startBlankTrackerButton.addEventListener("click", () => {
   persistApplications("Blank tracker saved locally");
   resetFormMode();
   formMessageElement.textContent = "Blank tracker ready. Create your first listing.";
+});
+
+exportPdfButton.addEventListener("click", () => {
+  exportVisibleApplications();
 });
 
 cancelEditButton.addEventListener("click", () => {

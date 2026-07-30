@@ -379,6 +379,14 @@ h3 {
   background: var(--coral);
 }
 
+.indigo .open-link {
+  background: var(--indigo);
+}
+
+.amber .open-link {
+  background: var(--amber);
+}
+
 .summary {
   margin: 16px 0 0;
   color: var(--muted);
@@ -448,6 +456,14 @@ h3 {
 
 .coral .highlight-list li::before {
   background: var(--coral);
+}
+
+.indigo .highlight-list li::before {
+  background: var(--indigo);
+}
+
+.amber .highlight-list li::before {
+  background: var(--amber);
 }
 
 .timeline-band {

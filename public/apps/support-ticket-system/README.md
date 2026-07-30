@@ -45,31 +45,22 @@ Then visit:
 http://localhost:8766
 ```
 
-## How To Publish With GitHub Pages
+## GitHub Repository
+
+Repository:
+
+```txt
+https://github.com/BookerGG/support-ticket-system
+```
+
+## GitHub Pages
 
 This project is ready to publish as a static GitHub Pages demo because `index.html` lives at the project root and the app does not need a backend build step.
 
-1. Create a new GitHub repository named `support-ticket-system`.
-2. Keep the repository empty when you create it. Do not add a README, license, or `.gitignore` on GitHub because this folder already has those project files.
-3. From this folder, make the first commit, connect the GitHub repo, and push:
-
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "Initial support ticket dashboard"
-git remote add origin https://github.com/YOUR-USERNAME/support-ticket-system.git
-git push -u origin main
-```
-
-4. In GitHub, open the repository settings.
-5. Go to **Pages**.
-6. Under **Build and deployment**, choose **Deploy from a branch**.
-7. Select branch `main` and folder `/`, then save.
-8. After GitHub finishes publishing, the demo URL will look like:
+After GitHub Pages is enabled from the `main` branch and `/` folder, the demo URL is:
 
 ```txt
-https://YOUR-USERNAME.github.io/support-ticket-system/
+https://bookergg.github.io/support-ticket-system/
 ```
 
 ## How To Test

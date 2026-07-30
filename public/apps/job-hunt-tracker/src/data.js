@@ -78,4 +78,3 @@ export const applications = [
     notes: "Paused because role shifted toward weekend support."
   }
 ];
-

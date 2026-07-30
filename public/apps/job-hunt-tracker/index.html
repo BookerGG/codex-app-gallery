@@ -17,6 +17,7 @@
           <p class="save-status" id="save-status" role="status" aria-live="polite">Using sample data</p>
           <button class="ghost-action danger-action" id="start-blank-tracker-button" type="button">Start blank tracker</button>
           <button class="ghost-action" id="reset-sample-data-button" type="button">Reset sample data</button>
+          <button class="ghost-action" id="export-pdf-button" type="button">Export PDF</button>
           <button class="primary-action" id="new-application-button" type="button">New listing</button>
         </div>
       </header>
@@ -36,7 +37,13 @@
             </label>
           </div>
 
-          <div class="segmented-controls" id="status-filters" aria-label="Filter by status"></div>
+          <div class="list-controls">
+            <div class="segmented-controls" id="status-filters" aria-label="Filter by status"></div>
+            <div class="view-toggle" aria-label="Choose view">
+              <button type="button" data-view="table" aria-pressed="true">Table</button>
+              <button type="button" data-view="board" aria-pressed="false">Board</button>
+            </div>
+          </div>
           <div class="table-wrap" id="application-list"></div>
         </section>
 
@@ -98,7 +105,7 @@
 
             <label>
               <span>Notes</span>
-              <textarea name="notes" rows="4" placeholder="Role details, interview notes, or follow-up context"></textarea>
+              <textarea name="notes" rows="4" placeholder="Role details, interview notes, or extra context"></textarea>
             </label>
 
             <div class="form-actions">

@@ -1,70 +1,25 @@
-const appProjects = [
-  {
-    title: "Job Hunt Tracker",
-    eyebrow: "Personal workflow",
-    status: "Live demo",
-    date: "Started July 29, 2026",
-    href: "/apps/job-hunt-tracker/index.html",
-    image: "/apps/job-hunt-tracker/preview.png",
-    accent: "teal",
-    summary:
-      "A focused dashboard for applications, interviews, contacts, next steps, and browser-local progress tracking.",
-    stats: [
-      ["Applications", "6"],
-      ["Interviewing", "1"],
-      ["Offers", "1"],
-    ],
-    highlights: [
-      "Searchable application table",
-      "Status filters and summary metrics",
-      "Create, edit, delete, reset, and save locally",
-    ],
-  },
-  {
-    title: "Support Ticket System",
-    eyebrow: "Internal tool",
-    status: "Live demo",
-    date: "Started July 29, 2026",
-    href: "/apps/support-ticket-system/index.html",
-    image: "/apps/support-ticket-system/preview.png",
-    accent: "coral",
-    summary:
-      "A compact support queue for customer requests, urgency, ownership, channel context, and triage health.",
-    stats: [
-      ["Open", "2"],
-      ["Urgent", "1"],
-      ["Resolved", "1"],
-    ],
-    highlights: [
-      "Status, priority, and text filtering",
-      "New ticket capture workflow",
-      "Operational summary metrics",
-    ],
-  },
-];
+import { appProjects } from "./app-projects";
+
+const latestApp = appProjects[appProjects.length - 1];
 
 const galleryStats = [
-  ["Codex apps", "3"],
-  ["Live demos", "2"],
-  ["Static copies", "2"],
+  ["Codex apps", String(appProjects.length + 1)],
+  ["Live demos", String(appProjects.length)],
+  ["Auto sync", "15 min"],
   ["Portfolio hub", "1"],
 ];
 
 const timeline = [
-  {
-    label: "First operational app",
-    title: "Job Hunt Tracker",
-    detail: "Turned a portfolio idea into a working CRUD dashboard with local storage.",
-  },
-  {
-    label: "Second internal tool",
-    title: "Support Ticket System",
-    detail: "Built a triage workspace around priority, status, search, and intake.",
-  },
+  ...appProjects.map((app, index) => ({
+    label: `Codex app ${index + 1}`,
+    title: app.title,
+    detail: app.summary,
+  })),
   {
     label: "Current app",
     title: "Codex App Gallery",
-    detail: "Collected the Codex-built apps into a single launchable portfolio surface.",
+    detail:
+      "Collects Codex-built apps into one launchable portfolio surface and refreshes from the source projects.",
   },
 ];
 
@@ -93,8 +48,9 @@ export default function Home() {
             <p className="eyebrow">Built with Codex</p>
             <h1 id="page-title">A launchpad for every app in progress.</h1>
             <p className="lede">
-              Your two existing Codex apps are collected here as live demos, with
-              room for the next projects you make.
+              Your Codex apps are collected here as live demos, with an
+              automatic refresh that keeps the gallery aligned with the source
+              projects.
             </p>
             <div className="intro-actions" aria-label="Primary actions">
               <a className="primary-link" href="#apps">
@@ -102,7 +58,7 @@ export default function Home() {
               </a>
               <a
                 className="secondary-link"
-                href="/apps/support-ticket-system/index.html"
+                href={latestApp?.href ?? "#apps"}
               >
                 Open latest demo
               </a>
@@ -127,8 +83,8 @@ export default function Home() {
             <h2 id="apps-title">Live demos</h2>
           </div>
           <p>
-            Each card opens the copied demo inside this site, so the gallery
-            works on its own when published.
+            Each card opens the latest synced demo inside this site, so the
+            gallery works on its own when published.
           </p>
         </div>
 
@@ -154,10 +110,10 @@ export default function Home() {
                 </div>
                 <p className="summary">{app.summary}</p>
                 <div className="mini-stats" aria-label={`${app.title} metrics`}>
-                  {app.stats.map(([label, value]) => (
-                    <div key={label}>
-                      <strong>{value}</strong>
-                      <span>{label}</span>
+                  {app.stats.map((stat) => (
+                    <div key={stat.label}>
+                      <strong>{stat.value}</strong>
+                      <span>{stat.label}</span>
                     </div>
                   ))}
                 </div>

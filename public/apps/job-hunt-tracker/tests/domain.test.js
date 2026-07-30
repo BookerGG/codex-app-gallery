@@ -2,11 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { applications } from "../src/data.js";
 import {
+  applicationsToPdf,
   createApplication,
   createApplicationId,
   filterApplications,
   getApplicationStats,
   getStatusCounts,
+  groupApplicationsByStatus,
   removeApplication,
   updateApplication,
   validateApplication
@@ -106,4 +108,40 @@ test("removes an application by id", () => {
 
   assert.equal(updatedApplications.length, 5);
   assert.equal(updatedApplications.some((application) => application.id === "app-1004"), false);
+});
+
+test("groups applications by status for board view", () => {
+  const groups = groupApplicationsByStatus(applications);
+
+  assert.equal(groups.Saved.length, 1);
+  assert.equal(groups.Applied.length, 1);
+  assert.equal(groups.Interviewing[0].company, "BrightForge Labs");
+});
+
+test("exports applications to a readable PDF report", () => {
+  const pdf = applicationsToPdf([
+    {
+      company: "Acme, Inc.",
+      role: "Frontend Developer",
+      location: "Remote",
+      status: "Applied",
+      dateApplied: "2026-07-29",
+      salaryRange: "$70k-$84k",
+      contact: "Riley",
+      nextStep: "Send portfolio",
+      source: "Referral",
+      notes: "Asked for \"polished\" examples."
+    }
+  ], {
+    generatedAt: new Date("2026-07-30T12:00:00"),
+    statusFilter: "Applied",
+    searchQuery: "Acme"
+  });
+  const pdfText = new TextDecoder().decode(pdf);
+
+  assert.match(pdfText, /^%PDF-1.4/);
+  assert.match(pdfText, /Job Hunt Tracker Report/);
+  assert.match(pdfText, /Acme, Inc\./);
+  assert.match(pdfText, /Status filter: Applied/);
+  assert.match(pdfText, /%%EOF$/);
 });
