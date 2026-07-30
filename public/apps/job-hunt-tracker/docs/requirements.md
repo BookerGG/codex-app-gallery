@@ -14,7 +14,7 @@ A junior developer, career changer, student, or early-career professional applyi
 - As a job seeker, I want to update or view the status of an application so I know where it stands.
 - As a job seeker, I want to edit an application so I can keep company details, contacts, and next steps accurate.
 - As a job seeker, I want to delete applications so my tracker stays clean.
-- As a job seeker, I want to archive jobs that become unpursuable so my active tracker stays focused.
+- As a job seeker, I want to archive rejected or withdrawn jobs that become unpursuable so my active tracker stays focused.
 - As a job seeker, I want to restore archived jobs so I can pursue them again if circumstances change.
 - As a job seeker, I want my tracker changes saved locally so my list survives a page refresh.
 - As a job seeker, I want to reset to sample data so I can recover the original demo state.
@@ -34,7 +34,7 @@ Included:
 - Search
 - Create and edit application form
 - Delete application action
-- Archive and restore actions for unpursuable jobs
+- Archive and restore actions for rejected or withdrawn unpursuable jobs
 - Browser-local save and load behavior
 - Reset sample data action
 - Start blank tracker action
@@ -59,7 +59,8 @@ Not included yet:
 - Users can add a new application and immediately see it in the list.
 - Users can edit an existing application and see the customized listing in the table.
 - Users can delete an application from the table.
-- Users can archive an unpursuable application and remove it from active views.
+- Users can archive a rejected or withdrawn application and remove it from active views.
+- Users cannot archive saved, applied, interviewing, or offer-stage applications.
 - Users can open the archive and restore an archived application.
 - Users can refresh the page and keep locally saved changes.
 - Users can reset the tracker back to the original sample applications.

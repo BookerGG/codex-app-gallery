@@ -90,6 +90,7 @@ const sampleApplications = [
 
 const STATUS_OPTIONS = ["Saved", "Applied", "Interviewing", "Offer", "Rejected", "Withdrawn"];
 
+const archivableStatuses = new Set(["Rejected", "Withdrawn"]);
 const closedStatuses = new Set(["Rejected", "Withdrawn"]);
 
 function getStatusCounts(applications) {
@@ -105,6 +106,10 @@ function getActiveApplications(applications) {
 
 function getArchivedApplications(applications) {
   return applications.filter((application) => Boolean(application.archivedAt));
+}
+
+function canArchiveApplication(application) {
+  return Boolean(application && !application.archivedAt && archivableStatuses.has(application.status));
 }
 
 function getApplicationStats(applications) {
@@ -192,6 +197,10 @@ function updateApplication(applications, applicationId, updates) {
 function archiveApplication(applications, applicationId, archivedAt = new Date().toISOString()) {
   return applications.map((application) => {
     if (application.id !== applicationId) {
+      return application;
+    }
+
+    if (!canArchiveApplication(application)) {
       return application;
     }
 
@@ -549,10 +558,12 @@ function renderFilters() {
     .map((status) => {
       const count = status === "All" ? currentApplications.length : counts[status];
       const isPressed = status === state.status;
+      const label = status === "Interviewing" ? "Interview" : status;
 
       return `
-        <button type="button" data-status="${status}" aria-pressed="${isPressed}">
-          ${status} ${count}
+        <button type="button" data-status="${status}" aria-pressed="${isPressed}" aria-label="${status} ${count}">
+          <span class="status-label">${label}</span>
+          <span class="status-count">${count}</span>
         </button>
       `;
     })
@@ -726,10 +737,14 @@ function createActionButtons(application) {
     `;
   }
 
+  const archiveButton = canArchiveApplication(application)
+    ? `<button class="text-action" type="button" data-action="archive" data-id="${application.id}">Archive</button>`
+    : "";
+
   return `
     <div class="action-group" aria-label="Actions for ${escapeHtml(application.company)}">
       <button class="text-action" type="button" data-action="edit" data-id="${application.id}">Edit</button>
-      <button class="text-action" type="button" data-action="archive" data-id="${application.id}">Archive</button>
+      ${archiveButton}
       <button class="text-action danger" type="button" data-action="remove" data-id="${application.id}">Delete</button>
     </div>
   `;
@@ -944,6 +959,13 @@ listElement.addEventListener("click", (event) => {
 
   if (button.dataset.action === "archive") {
     const application = state.applications.find((item) => item.id === applicationId);
+
+    if (!canArchiveApplication(application)) {
+      formMessageElement.textContent = "Only rejected or withdrawn jobs can be archived as unpursuable.";
+      formMessageElement.classList.add("error");
+      return;
+    }
+
     const shouldArchive = window.confirm(`Archive ${application?.company ?? "this application"} as unpursuable? You can restore it later.`);
 
     if (!shouldArchive) {
@@ -975,6 +997,10 @@ listElement.addEventListener("click", (event) => {
     }
 
     state.applications = restoreApplication(state.applications, applicationId);
+    if (getArchivedApplications(state.applications).length === 0) {
+      state.mode = "active";
+      resetFilters();
+    }
     persistApplications("Restored locally");
     formMessageElement.textContent = "Application restored to the active tracker.";
     formMessageElement.classList.remove("error");

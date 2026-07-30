@@ -20,7 +20,7 @@ type JobApplication = {
 };
 ```
 
-Archived applications remain in the same saved collection as active applications. Active views omit records with `archivedAt`; the archive view shows only those records and allows restore or delete.
+Archived applications remain in the same saved collection as active applications. Active views omit records with `archivedAt`; the archive view shows only those records and allows restore or delete. Only rejected or withdrawn applications can be archived as unpursuable.
 
 ## Status Meaning
 

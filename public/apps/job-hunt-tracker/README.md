@@ -2,9 +2,41 @@
 
 A beginner-friendly portfolio project for tracking job applications, interview progress, contacts, and next steps.
 
+## Live Demo
+
+- Live site: https://bookergg.github.io/job-hunt-tracker/
+- Case study: [docs/case-study.md](./docs/case-study.md)
+
 ## Project Goal
 
 Build a focused dashboard that helps a job seeker see where every application stands and what needs attention next. The first version uses realistic mock data so the product flow can be designed before adding a database or authentication.
+
+## Project Highlights
+
+- Static front-end app that runs locally, from GitHub Pages, or by double-clicking the opener file.
+- Browser-local persistence with save/load, sample reset, and blank tracker workflows.
+- Table and board views for scanning the application pipeline.
+- Guarded archive workflow for rejected or withdrawn jobs that become unpursuable.
+- PDF export for the current filtered view.
+- Modular source with 19 tests covering domain and storage behavior.
+
+## Screenshots
+
+### Active Dashboard
+
+![Active dashboard](./docs/screenshots/active-dashboard.png)
+
+### Archive View
+
+![Archive view](./docs/screenshots/archive-view.png)
+
+### Create and Edit Form
+
+![Create and edit form](./docs/screenshots/create-edit-form.png)
+
+### PDF Export Preview
+
+![PDF export preview](./docs/screenshots/pdf-export-preview.png)
 
 ## Current Milestone
 
@@ -15,7 +47,7 @@ Build a focused dashboard that helps a job seeker see where every application st
 - Applications can be created, edited, and deleted during the session.
 - Applications are saved locally in the browser.
 - Table and board views are available for scanning the pipeline.
-- Jobs that are no longer pursuable can be moved to an archive and restored later.
+- Rejected or withdrawn jobs that are no longer pursuable can be moved to an archive and restored later.
 - Filtered listings can be exported to a PDF report.
 - Sample data can be restored from the UI.
 - All listings can be deleted at once to start a blank tracker.
@@ -28,7 +60,7 @@ Build a focused dashboard that helps a job seeker see where every application st
 - Search by company, role, location, contact, or source.
 - Add a new application during the session.
 - Edit or delete existing applications.
-- Archive unpursuable jobs outside the active tracker.
+- Archive rejected or withdrawn jobs outside the active tracker.
 - Restore archived jobs if they become relevant again.
 - Save tracker changes in browser-local storage.
 - Reset the tracker to the original sample data.
@@ -95,5 +127,5 @@ node scripts/build-browser-bundle.mjs
 ## Next Iterations
 
 - Add a backend database so records can sync across devices.
-- Deploy the app and add screenshots to this README.
-- Add a short portfolio case study with screenshots.
+- Add JSON backup import/export so users can move saved tracker data between browsers.
+- Add richer interview notes and contact history.

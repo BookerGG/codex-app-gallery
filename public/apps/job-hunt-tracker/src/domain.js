@@ -1,5 +1,6 @@
 export const STATUS_OPTIONS = ["Saved", "Applied", "Interviewing", "Offer", "Rejected", "Withdrawn"];
 
+const archivableStatuses = new Set(["Rejected", "Withdrawn"]);
 const closedStatuses = new Set(["Rejected", "Withdrawn"]);
 
 export function getStatusCounts(applications) {
@@ -15,6 +16,10 @@ export function getActiveApplications(applications) {
 
 export function getArchivedApplications(applications) {
   return applications.filter((application) => Boolean(application.archivedAt));
+}
+
+export function canArchiveApplication(application) {
+  return Boolean(application && !application.archivedAt && archivableStatuses.has(application.status));
 }
 
 export function getApplicationStats(applications) {
@@ -102,6 +107,10 @@ export function updateApplication(applications, applicationId, updates) {
 export function archiveApplication(applications, applicationId, archivedAt = new Date().toISOString()) {
   return applications.map((application) => {
     if (application.id !== applicationId) {
+      return application;
+    }
+
+    if (!canArchiveApplication(application)) {
       return application;
     }
 

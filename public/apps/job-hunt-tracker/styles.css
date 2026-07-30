@@ -45,6 +45,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 24px;
   margin-bottom: 20px;
 }
@@ -52,6 +53,9 @@ textarea {
 .topbar-actions {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex: 1 1 520px;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -103,6 +107,7 @@ h2 {
 .ghost-action,
 .text-action,
 .segmented-controls button,
+.archive-toggle button,
 .view-toggle button {
   min-height: 42px;
   border: 1px solid transparent;
@@ -249,15 +254,17 @@ textarea:focus {
 }
 
 .segmented-controls {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  min-width: 0;
+  overflow: visible;
 }
 
 .list-controls {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
   padding: 14px 20px;
   border-bottom: 1px solid var(--border);
@@ -266,7 +273,10 @@ textarea:focus {
 .list-control-stack {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .archive-toggle {
@@ -283,10 +293,41 @@ textarea:focus {
 .archive-toggle button,
 .view-toggle button {
   flex: 0 0 auto;
-  padding: 0 13px;
+  padding: 0 10px;
   border-color: var(--border);
   background: var(--surface-strong);
   color: var(--text);
+  white-space: nowrap;
+}
+
+.segmented-controls button {
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  min-width: 0;
+  padding: 0 6px;
+  font-size: 0.72rem;
+}
+
+.status-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 0.68rem;
 }
 
 .segmented-controls button[aria-pressed="true"],
@@ -529,6 +570,17 @@ form {
   }
 }
 
+@media (max-width: 1320px) {
+  .topbar {
+    align-items: flex-start;
+  }
+
+  .topbar-actions {
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+}
+
 @media (max-width: 680px) {
   .app-shell {
     width: min(100% - 20px, 1440px);
@@ -536,10 +588,13 @@ form {
   }
 
   .topbar,
-  .panel-header,
-  .list-controls {
+  .panel-header {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .list-controls {
+    grid-template-columns: 1fr;
   }
 
   .topbar-actions {
@@ -548,13 +603,36 @@ form {
   }
 
   .view-toggle {
-    flex-direction: column;
+    flex: 1;
   }
 
   .list-control-stack,
   .archive-toggle {
     align-items: stretch;
-    flex-direction: column;
+    justify-content: stretch;
+  }
+
+  .archive-toggle,
+  .view-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .segmented-controls {
+    gap: 3px;
+  }
+
+  .segmented-controls button {
+    min-height: 32px;
+    padding: 0 3px;
+    font-size: 0.62rem;
+  }
+
+  .status-count {
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    font-size: 0.58rem;
   }
 
   .save-status {

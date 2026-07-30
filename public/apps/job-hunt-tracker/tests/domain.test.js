@@ -4,6 +4,7 @@ import { applications } from "../src/data.js";
 import {
   archiveApplication,
   applicationsToPdf,
+  canArchiveApplication,
   createApplication,
   createApplicationId,
   filterApplications,
@@ -123,7 +124,7 @@ test("groups applications by status for board view", () => {
 });
 
 test("archives unpursuable applications away from active listings", () => {
-  const archivedApplications = archiveApplication(applications, "app-1002", "2026-07-30T12:00:00.000Z");
+  const archivedApplications = archiveApplication(applications, "app-1004", "2026-07-30T12:00:00.000Z");
 
   assert.equal(getActiveApplications(archivedApplications).length, 5);
   assert.equal(getArchivedApplications(archivedApplications).length, 1);
@@ -131,10 +132,22 @@ test("archives unpursuable applications away from active listings", () => {
   assert.equal(getArchivedApplications(archivedApplications)[0].archivedAt, "2026-07-30T12:00:00.000Z");
 });
 
+test("only rejected or withdrawn applications can be archived", () => {
+  const appliedApplication = applications.find((application) => application.id === "app-1002");
+  const rejectedApplication = applications.find((application) => application.id === "app-1004");
+  const withdrawnApplication = applications.find((application) => application.id === "app-1006");
+  const unchangedApplications = archiveApplication(applications, "app-1002", "2026-07-30T12:00:00.000Z");
+
+  assert.equal(canArchiveApplication(appliedApplication), false);
+  assert.equal(canArchiveApplication(rejectedApplication), true);
+  assert.equal(canArchiveApplication(withdrawnApplication), true);
+  assert.equal(getArchivedApplications(unchangedApplications).length, 0);
+});
+
 test("restores archived applications to the active tracker", () => {
-  const archivedApplications = archiveApplication(applications, "app-1002", "2026-07-30T12:00:00.000Z");
-  const restoredApplications = restoreApplication(archivedApplications, "app-1002");
-  const restoredApplication = restoredApplications.find((application) => application.id === "app-1002");
+  const archivedApplications = archiveApplication(applications, "app-1004", "2026-07-30T12:00:00.000Z");
+  const restoredApplications = restoreApplication(archivedApplications, "app-1004");
+  const restoredApplication = restoredApplications.find((application) => application.id === "app-1004");
 
   assert.equal(getActiveApplications(restoredApplications).length, 6);
   assert.equal(getArchivedApplications(restoredApplications).length, 0);
