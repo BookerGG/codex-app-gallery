@@ -39,17 +39,33 @@ function Find-Tool {
 }
 
 $runtimeRoot = Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies"
+$localGhBin = Join-Path $projectRoot "work\tools\gh\bin"
 $nodeBin = Join-Path $runtimeRoot "node\bin"
 $fallbackBin = Join-Path $runtimeRoot "bin\fallback"
 $gitMingwBin = Join-Path $runtimeRoot "native\git\mingw64\bin"
 $gitCmdBin = Join-Path $runtimeRoot "native\git\cmd"
-$env:PATH = @($nodeBin, $fallbackBin, $gitMingwBin, $gitCmdBin, $env:PATH) -join ";"
+$env:PATH = @($localGhBin, $nodeBin, $fallbackBin, $gitMingwBin, $gitCmdBin, $env:PATH) -join ";"
 $env:GIT_EXEC_PATH = $gitMingwBin
 $env:GIT_SSL_BACKEND = "openssl"
 
 $pnpm = Find-Tool (Join-Path $fallbackBin "pnpm.cmd") "pnpm"
 $git = Find-Tool (Join-Path $gitCmdBin "git.exe") "git"
 $gitCommonArgs = @("-c", "http.sslBackend=openssl", "--git-dir=work\deploy-source.git", "--work-tree=.")
+
+function Get-GitAuthArgs {
+  $gh = Get-Command "gh" -ErrorAction SilentlyContinue
+  if (-not $gh) {
+    return @()
+  }
+
+  $token = (& $gh.Source auth token 2>$null).Trim()
+  if ($LASTEXITCODE -ne 0 -or -not $token) {
+    return @()
+  }
+
+  $basic = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$token"))
+  return @("-c", "http.extraHeader=Authorization: Basic $basic")
+}
 
 function Invoke-ProjectGit {
   & $git @gitCommonArgs @args
@@ -110,9 +126,14 @@ try {
     Invoke-ProjectGit remote add $RemoteName $RemoteUrl
   }
 
+  $gitAuthArgs = @(Get-GitAuthArgs)
+  if ($gitAuthArgs.Count -gt 0) {
+    Write-Log "Using GitHub CLI credentials for git network operations."
+  }
+
   if ($InitialForcePush) {
     Write-Log "Initial force-with-lease push requested."
-    & $git @gitCommonArgs fetch $RemoteName $Branch
+    & $git @gitAuthArgs @gitCommonArgs fetch $RemoteName $Branch
     if ($LASTEXITCODE -ne 0) {
       throw "Could not fetch $RemoteName/$Branch before force-with-lease push."
     }
@@ -120,9 +141,9 @@ try {
     if ($LASTEXITCODE -ne 0 -or -not $expected) {
       throw "Could not resolve fetched $RemoteName/$Branch."
     }
-    & $git @gitCommonArgs push "--force-with-lease=refs/heads/${Branch}:$expected" $RemoteName "${Branch}:${Branch}"
+    & $git @gitAuthArgs @gitCommonArgs push "--force-with-lease=refs/heads/${Branch}:$expected" $RemoteName "${Branch}:${Branch}"
   } else {
-    & $git @gitCommonArgs push $RemoteName "${Branch}:${Branch}"
+    & $git @gitAuthArgs @gitCommonArgs push $RemoteName "${Branch}:${Branch}"
   }
 
   if ($LASTEXITCODE -ne 0) {
