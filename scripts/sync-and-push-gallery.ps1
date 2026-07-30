@@ -49,7 +49,7 @@ $env:GIT_SSL_BACKEND = "openssl"
 
 $pnpm = Find-Tool (Join-Path $fallbackBin "pnpm.cmd") "pnpm"
 $git = Find-Tool (Join-Path $gitCmdBin "git.exe") "git"
-$gitCommonArgs = @("--git-dir=work\deploy-source.git", "--work-tree=.")
+$gitCommonArgs = @("-c", "http.sslBackend=openssl", "--git-dir=work\deploy-source.git", "--work-tree=.")
 
 function Invoke-ProjectGit {
   & $git @gitCommonArgs @args
