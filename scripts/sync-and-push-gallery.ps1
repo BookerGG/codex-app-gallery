@@ -45,6 +45,7 @@ $gitMingwBin = Join-Path $runtimeRoot "native\git\mingw64\bin"
 $gitCmdBin = Join-Path $runtimeRoot "native\git\cmd"
 $env:PATH = @($nodeBin, $fallbackBin, $gitMingwBin, $gitCmdBin, $env:PATH) -join ";"
 $env:GIT_EXEC_PATH = $gitMingwBin
+$env:GIT_SSL_BACKEND = "openssl"
 
 $pnpm = Find-Tool (Join-Path $fallbackBin "pnpm.cmd") "pnpm"
 $git = Find-Tool (Join-Path $gitCmdBin "git.exe") "git"
