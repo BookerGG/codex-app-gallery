@@ -68,26 +68,35 @@ try {
 
   $status = @(Invoke-ProjectGit status --short)
   if ($status.Count -eq 0) {
-    Write-Log "No source changes after sync."
-    exit 0
+    if (-not $InitialForcePush) {
+      Write-Log "No source changes after sync."
+      exit 0
+    }
+
+    Write-Log "No source changes after sync; proceeding with initial push of current HEAD."
+  } else {
+    Write-Log "Detected source changes; running validation."
+    & $pnpm test
+    if ($LASTEXITCODE -ne 0) {
+      throw "pnpm test failed with exit code $LASTEXITCODE"
+    }
+
+    Invoke-ProjectGit add -A
+    & $git @gitCommonArgs diff --cached --quiet
+    if ($LASTEXITCODE -eq 0) {
+      if (-not $InitialForcePush) {
+        Write-Log "No staged changes after validation."
+        exit 0
+      }
+
+      Write-Log "No staged changes after validation; proceeding with initial push of current HEAD."
+    } else {
+      Invoke-ProjectGit config user.name "Codex"
+      Invoke-ProjectGit config user.email "codex@openai.com"
+      Invoke-ProjectGit commit -m "Auto-sync Codex apps"
+    }
   }
 
-  Write-Log "Detected source changes; running validation."
-  & $pnpm test
-  if ($LASTEXITCODE -ne 0) {
-    throw "pnpm test failed with exit code $LASTEXITCODE"
-  }
-
-  Invoke-ProjectGit add -A
-  & $git @gitCommonArgs diff --cached --quiet
-  if ($LASTEXITCODE -eq 0) {
-    Write-Log "No staged changes after validation."
-    exit 0
-  }
-
-  Invoke-ProjectGit config user.name "Codex"
-  Invoke-ProjectGit config user.email "codex@openai.com"
-  Invoke-ProjectGit commit -m "Auto-sync Codex apps"
   $head = (& $git @gitCommonArgs rev-parse HEAD).Trim()
   if ($LASTEXITCODE -ne 0) {
     throw "Could not read committed HEAD."
