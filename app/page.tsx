@@ -5,7 +5,7 @@ const latestApp = appProjects[appProjects.length - 1];
 const galleryStats = [
   ["Codex apps", String(appProjects.length + 1)],
   ["Live demos", String(appProjects.length)],
-  ["Auto sync", "15 min"],
+  ["Auto sync", "GitHub"],
   ["Portfolio hub", "1"],
 ];
 
@@ -49,8 +49,8 @@ export default function Home() {
             <h1 id="page-title">A launchpad for every app in progress.</h1>
             <p className="lede">
               Your Codex apps are collected here as live demos, with an
-              automatic refresh that keeps the gallery aligned with the source
-              projects.
+              automatic refresh path that keeps the gallery aligned with the
+              source projects without relying on Codex scheduled runs.
             </p>
             <div className="intro-actions" aria-label="Primary actions">
               <a className="primary-link" href="#apps">

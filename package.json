@@ -10,6 +10,8 @@
     "sync:apps": "node scripts/sync-codex-apps.mjs",
     "refresh:apps": "node scripts/sync-codex-apps.mjs && node ./node_modules/vinext/dist/cli.js build && node --test tests/rendered-html.test.mjs",
     "build": "node ./node_modules/vinext/dist/cli.js build",
+    "export:static": "node scripts/export-static.mjs",
+    "build:static": "node ./node_modules/vinext/dist/cli.js build && node scripts/export-static.mjs",
     "start": "node ./node_modules/vinext/dist/cli.js start",
     "test": "node ./node_modules/vinext/dist/cli.js build && node --test tests/rendered-html.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
