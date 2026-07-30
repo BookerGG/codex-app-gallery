@@ -20,12 +20,14 @@ Codex scheduled tasks use Codex usage when they run. To keep gallery updates aut
 2. `.github/workflows/deploy-pages.yml` builds a static export on GitHub Actions and deploys it to GitHub Pages.
 3. `scripts/install-credit-free-auto-update.ps1` registers the local Windows scheduled task.
 
+By default, the local scheduled task checks once per week.
+
 The local script requires GitHub Git credentials once. Sign in with GitHub CLI or Git Credential Manager, then run the initial push:
 
 ```powershell
 gh auth login
 powershell -ExecutionPolicy Bypass -File scripts\sync-and-push-gallery.ps1 -InitialForcePush
-powershell -ExecutionPolicy Bypass -File scripts\install-credit-free-auto-update.ps1 -EveryMinutes 15
+powershell -ExecutionPolicy Bypass -File scripts\install-credit-free-auto-update.ps1
 ```
 
 After GitHub Pages is enabled for the repository, the credit-free URL is expected to be `https://bookergg.github.io/codex-app-gallery/`.
